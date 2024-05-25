@@ -17,7 +17,7 @@ class ConfigProvider extends \Bermuda\Config\ConfigProvider
                 $config = conf($container);
                 if ($config->offsetExists(self::listeneresConfigKey)) {
                     return new Scanner(
-                        $config->get(self::listeneresConfigKey),
+                        $config->get(static::listeneresConfigKey),
                         $container->get(ClassFinderInterface::class)
                     );
                 }
