@@ -1,0 +1,13 @@
+{
+  "name": "bermudaphp/class-scanner",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Bermuda\\ClassScanner\\": "src/",
+    }
+  },
+  "require": {
+    "php": "^8.1",
+    "nikic/php-parser": "^5.0.2"
+  }
+}
