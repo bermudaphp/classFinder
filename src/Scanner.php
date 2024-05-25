@@ -1,6 +1,6 @@
 <?php
 
-namespace Bermuda\ClassScanner\Scanner;
+namespace Bermuda\ClassScanner;
 
 use PhpParser\Node;
 use PhpParser\NodeFinder;
