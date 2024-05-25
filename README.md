@@ -59,7 +59,8 @@ $scanner->listen(new class($routes) implements \Bermuda\ClassScaner\ClassFoundLi
     });
 
 // The scan method will find all classes in the scanned directory and pass the ReflectionClass instance
-// to the handle method of the registered listeners for each class found
+// to the handle method of the registered listeners for each class found.
+// After that, the finalize method will be called for each listener
 $scanner->scan('scanning/directory');
 
 ````
