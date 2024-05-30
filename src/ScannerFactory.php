@@ -11,10 +11,10 @@ final class ScannerFactory
     public static function fromContainer(ContainerInterface $container): Scanner
     {
         $config = conf($container);
-        if ($config->offsetGet('app')->offsetExists(self::listeneresConfigKey)) {
+        if ($config->offsetGet('app')->offsetExists(ConfigProvider::listeneresConfigKey)) {
             $config = $config->offsetGet('app');
             return new Scanner(
-                $config->get(static::listeneresConfigKey),
+                $config->get(ConfigProvider::listeneresConfigKey),
                 $container->get(ClassFinderInterface::class)
             );
         }
