@@ -11,20 +11,7 @@ class ConfigProvider extends \Bermuda\Config\ConfigProvider
     
     protected function getFactories(): array
     {
-        return [
-            Scanner::class => static function(ContainerInterface $container): Scanner {
-                
-                $config = conf($container);
-                if ($config->offsetExists(self::listeneresConfigKey)) {
-                    return new Scanner(
-                        $config->get(static::listeneresConfigKey),
-                        $container->get(ClassFinderInterface::class)
-                    );
-                }
-                
-                return new Scanner(finder: $container->get(ClassFinderInterface::class));
-            }
-        ];
+        return [Scanner::class => ScannerFactory::fromContainer];
     }
 
     protected function getAliases(): array
