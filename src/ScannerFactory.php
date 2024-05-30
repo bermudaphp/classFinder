@@ -7,6 +7,7 @@ use function Bermuda\Config\conf;
 
 final class ScannerFactory
 {
+    public const fromContainer = '\Bermuda\ClassScanner\ScannerFactory::fromContainer';
     public static function fromContainer(ContainerInterface $container): Scanner
     {
         $config = conf($container);
