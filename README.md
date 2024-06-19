@@ -6,7 +6,7 @@ composer require bermudaphp/class-scanner
 ```php
 $routes = new \Bermuda\Routes\Routes;
 $scanner = new \Bermuda\ClassScaner\Scanner;
-// register a listener that will parse the <Bermuda\Router\Route> attribute and register it in the RouteMap
+// register a listener that will parse the <Bermuda\Router\Attribute\Route> attribute and register it in the RouteMap
 $scanner->listen(new class($routes) implements \Bermuda\ClassScaner\ClassFoundListenerInterface
     {
         /**
