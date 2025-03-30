@@ -2,10 +2,12 @@
 
 namespace Bermuda\ClassScanner\Filter;
 
+use Bermuda\Reflection\ReflectionClass;
+
 abstract class AbstractFilter implements FilterInterface
 {
     /**
-     * @param iterable<\ReflectionClass> $classes
+     * @param iterable<ReflectionClass> $classes
      */
     public function __construct(
         protected iterable $classes = [],
@@ -19,12 +21,12 @@ abstract class AbstractFilter implements FilterInterface
     }
 
     /**
-     * @return \Generator<\ReflectionClass>
+     * @return \Generator<ReflectionClass>
      */
     public function getIterator(): \Generator
     {
         foreach ($this->classes as $class) if ($this->filter($class)) yield $class;
     }
 
-    abstract protected function filter(\ReflectionClass $class): bool ;
+    abstract protected function filter(ReflectionClass $class): bool ;
 }
