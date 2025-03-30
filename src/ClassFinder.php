@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
 use Symfony\Component\Finder\Finder;
+use Bermuda\Reflection\ReflectionClass;
 use Bermuda\ClassScanner\Filter\FilterInterface;
 
 final class ClassFinder implements ClassFinderInterface
@@ -114,7 +115,7 @@ final class ClassFinder implements ClassFinderInterface
                             : $node->name->toString();
                     }
 
-                    yield new \ReflectionClass($cls);
+                    yield new ReflectionClass($cls);
                 }
             }
         }
