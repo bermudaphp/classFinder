@@ -5,6 +5,7 @@ namespace Bermuda\ClassScanner;
 use PhpParser\Node;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Finder\Finder;
 use Bermuda\Reflection\ReflectionClass;
 use Bermuda\ClassScanner\Filter\FilterInterface;
@@ -147,5 +148,15 @@ final class ClassFinder implements ClassFinderInterface
             foreach ($nodes as $n) if ($node instanceof $n) return true;
             return false;
         };
+    }
+    
+    public static function createFromContainer(ContainerInterface $container): ClassFinder
+    {
+        $config = $container->get('config');
+        
+        return new self(
+            $config->get(ConfigProvider::CONFIG_KEY_MODE, self::MODE_FIND_ALL),
+            $config->get(ConfigProvider::CONFIG_KEY_FILTERS, [])
+        );
     }
 }
