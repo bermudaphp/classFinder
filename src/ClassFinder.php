@@ -47,12 +47,7 @@ final class ClassFinder implements ClassFinderInterface
 
         return $copy;
     }
-
-    public function clearFilters(): self
-    {
-        return new self($this->mode);
-    }
-    
+ 
     private function addFilter(FilterInterface $filter): void
     {
         $this->filters[] = $filter;
