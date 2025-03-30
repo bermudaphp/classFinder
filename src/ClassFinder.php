@@ -5,6 +5,7 @@ namespace Bermuda\ClassScanner;
 use PhpParser\Node;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
+use Symfony\Component\Finder\Finder;
 use Bermuda\ClassScanner\Filter\FilterInterface;
 
 final class ClassFinder implements ClassFinderInterface
@@ -53,13 +54,15 @@ final class ClassFinder implements ClassFinderInterface
     }
 
     /**
+     * @param string|string[] $dirs
+     * @param string|string[] $exclude
      * @return \Generator<\ReflectionClass>
      * @throws \ReflectionException
      */
-    public function find(string $dir): \Generator
+    public function find(string|array $dirs, string|array $exclude = []): \Generator
     {
         $filters = $this->filters;
-        $classes = $this->createGenerator($dir);
+        $classes = $this->createGenerator($dirs, $exclude);
 
         while (($filter = array_shift($filters)) !== null) {
             $classes = $filter->setClasses($classes);
@@ -68,13 +71,20 @@ final class ClassFinder implements ClassFinderInterface
         foreach ($classes as $class) yield $class;
     }
 
-    private function createGenerator(string $dir): \Generator
+    private function createGenerator(string|array $dirs, string|array $exclude): \Generator
     {
         $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $finder = new NodeFinder;
 
+        /*
         $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
         $files = new \RegexIterator($files, '/\.php$/');
+        */
+
+        $files = new Finder()->in($dirs)
+            ->files()
+            ->exclude($exclude)
+            ->name('/\.php$/');
 
         $filter = $this->createAstFilter();
 
