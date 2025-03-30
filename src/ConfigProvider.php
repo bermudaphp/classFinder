@@ -6,6 +6,8 @@ use Psr\Container\ContainerInterface;
 
 class ConfigProvider
 {
+    public const CONFIG_KEY_MODE = '\Bermuda\ClassScanner:flags';
+    public const CONFIG_KEY_FILTERS = '\Bermuda\ClassScanner:filters';
     public const CONFIG_KEY_LISTENERS = '\Bermuda\ClassScanner:listeners';
 
     public function __invoke(): array
@@ -21,16 +23,9 @@ class ConfigProvider
     
     protected function getFactories(): array
     {
-        return [Scanner::class => ScannerFactory::createFromContainer];
-    }
-
-    protected function getAliases(): array
-    {
-        return [ClassFinderInterface::class => ClassFinder::class];
-    }
-
-    protected function getInvokables(): array
-    {
-        return [ClassFinder::class];
+        return [
+            Scanner::class => [ScannerFactory::class, 'createFromContainer'],
+            ClassFinderInterface::class => [ClassFinder::class, 'createFromContainer'],
+        ];
     }
 }
