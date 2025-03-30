@@ -48,14 +48,6 @@ final class ClassFinder implements ClassFinderInterface
         return $copy;
     }
 
-    /**
-     * @return FilterInterface[]
-     */
-    public function getFilters(): array
-    {
-        return $this->filters;
-    }
-
     public function clearFilters(): self
     {
         return new self($this->mode);
