@@ -53,7 +53,7 @@ final class ClassFinder implements ClassFinderInterface
      */
     public function getFilters(): array
     {
-        $this->filters;
+        return $this->filters;
     }
 
     public function clearFilters(): self
