@@ -1,6 +1,6 @@
 <?php
 
-namespace finder;
+namespace Bermuda\ClassScanner\Filter;
 
 class SubclassFilter extends AbstractFilter
 {
