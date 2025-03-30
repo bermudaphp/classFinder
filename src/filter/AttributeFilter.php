@@ -12,7 +12,7 @@ class AttributeFilter extends \Bermuda\ClassScanner\Filter\AbstractFilter
      * @param iterable<ReflectionClass> $classes
      */
     public function __construct(
-        public string $attribute,
+        public readonly string $attribute,
         iterable $classes = []
     ) {
         parent::__construct($classes);
