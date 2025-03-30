@@ -30,7 +30,7 @@ final class ClassFinder implements ClassFinderInterface
 
     public function withFilter(FilterInterface $filter): self
     {
-        $copy = clone $this;
+        $copy = new self($this->mode);
         $copy->addFilter($filter);
 
         return $copy;
@@ -42,7 +42,7 @@ final class ClassFinder implements ClassFinderInterface
      */
     public function withFilters(iterable $filters): self
     {
-        $copy = clone $this;
+        $copy = new self($this->mode);
         foreach ($filters as $filter) $copy->addFilter($filter);
 
         return $copy;
