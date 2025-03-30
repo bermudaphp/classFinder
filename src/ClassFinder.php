@@ -55,6 +55,11 @@ final class ClassFinder implements ClassFinderInterface
     {
         $this->filters;
     }
+
+    public function clearFilters(): self
+    {
+        return new self($this->mode);
+    }
     
     private function addFilter(FilterInterface $filter): void
     {
