@@ -10,7 +10,7 @@ final class ScannerFactory
     public static function createFromContainer(ContainerInterface $container): Scanner
     {
         return new Scanner(
-            $container->get('config')->get(ConfigProvider::CONFIG_KEY_LISTENER, []),
+            $container->get('config')->get(ConfigProvider::CONFIG_KEY_LISTENERS, []),
             $container->get(ClassFinderInterface::class)
         );
     }
