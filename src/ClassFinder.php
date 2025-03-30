@@ -30,24 +30,31 @@ final class ClassFinder implements ClassFinderInterface
 
     public function withFilter(FilterInterface $filter): self
     {
-        $copy = new self($this->mode);
+        $copy = clone $this;
         $copy->addFilter($filter);
 
         return $copy;
     }
-
+    
     /**
      * @param iterable<FilterInterface> $filters
      * @return self
      */
     public function withFilters(iterable $filters): self
     {
-        $copy = new self($this->mode);
+        $copy = clone $this;
         foreach ($filters as $filter) $copy->addFilter($filter);
 
         return $copy;
     }
 
+    /**
+     * @return FilterInterface[]
+     */
+    public function getFilters(): array
+    {
+        $this->filters;
+    }
     private function addFilter(FilterInterface $filter): void
     {
         $this->filters[] = $filter;
