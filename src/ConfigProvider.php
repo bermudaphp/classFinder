@@ -3,11 +3,10 @@
 namespace Bermuda\ClassScanner;
 
 use Psr\Container\ContainerInterface;
-use function Bermuda\Config\conf;
 
-class ConfigProvider extends \Bermuda\Config\ConfigProvider
+class ConfigProvider
 {
-    public const listeneresConfigKey = '\Bermuda\ClassScanner\listeners';
+    public const CONFIG_KEY_LISTENERS = '\Bermuda\ClassScanner:listeners';
     
     protected function getFactories(): array
     {
