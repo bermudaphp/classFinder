@@ -21,7 +21,7 @@ class ConfigProvider
     
     protected function getFactories(): array
     {
-        return [Scanner::class => ScannerFactory::fromContainer];
+        return [Scanner::class => ScannerFactory::createFromContainer];
     }
 
     protected function getAliases(): array
