@@ -7,6 +7,8 @@ use Bermuda\Reflection\ReflectionClass;
 class SubclassFilter extends AbstractFilter
 {
     /**
+     * @template T
+     * @param class-string<T>
      * @param iterable<ReflectionClass> $classes
      */
     public function __construct(
