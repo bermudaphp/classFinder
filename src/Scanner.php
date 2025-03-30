@@ -17,7 +17,7 @@ final class Scanner
      * @param iterable<ClassFoundListenerInterface>|null $listeners
      */
     public function __construct(
-        iterable $listeners = null, 
+        ?iterable $listeners = null,
         private readonly ClassFinderInterface $finder = new ClassFinder()
     ) {
         if ($listeners) {
@@ -26,11 +26,13 @@ final class Scanner
     }
 
     /**
+     * @param string|string[] $dirs
+     * @param string|string[] $exclude
      * @throws \ReflectionException
      */
-    public function scan(string $dir): void
+    public function scan(string|array $dirs, string|array $exclude = []): void
     {
-        foreach ($this->finder->find($dir) as $reflector) {
+        foreach ($this->finder->find($dirs, $exclude) as $reflector) {
             foreach ($this->listeners as $listener) $listener->handle($reflector);
         }
         
