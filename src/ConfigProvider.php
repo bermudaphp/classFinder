@@ -7,6 +7,17 @@ use Psr\Container\ContainerInterface;
 class ConfigProvider
 {
     public const CONFIG_KEY_LISTENERS = '\Bermuda\ClassScanner:listeners';
+
+    public function __invoke(): array
+    {
+        return [
+            'dependencies' => [
+                'factories' => $this->getFactories(),
+                'aliases' => $this->getAliases(),
+                'invokables' => $this->getInvokables()
+            ]
+        ];
+    }
     
     protected function getFactories(): array
     {
