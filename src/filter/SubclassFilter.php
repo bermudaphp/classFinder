@@ -2,10 +2,12 @@
 
 namespace Bermuda\ClassScanner\Filter;
 
+use Bermuda\Reflection\ReflectionClass;
+
 class SubclassFilter extends AbstractFilter
 {
     /**
-     * @param iterable<\ReflectionClass> $classes
+     * @param iterable<ReflectionClass> $classes
      */
     public function __construct(
         public readonly string $cls,
@@ -14,7 +16,7 @@ class SubclassFilter extends AbstractFilter
         parent::__construct($classes);
     }
 
-    protected function filter(\ReflectionClass $class): bool
+    protected function filter(ReflectionClass $class): bool
     {
         return $class->isSubclassOf($this->cls);
     }
