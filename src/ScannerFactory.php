@@ -10,7 +10,7 @@ final class ScannerFactory
     {
         $listeners = [];
 
-        foreach ($container->get('config')->get(ConfigProvider::CONFIG_KEY_LISTENERS, []) as $id) {
+        foreach ($container->get('config')[ConfigProvider::CONFIG_KEY_LISTENERS] ?? [] as $id) {
             $listeners[] = $container->get($id);
         }
 
