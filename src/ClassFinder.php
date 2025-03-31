@@ -153,10 +153,9 @@ final class ClassFinder implements ClassFinderInterface
     public static function createFromContainer(ContainerInterface $container): ClassFinder
     {
         $config = $container->get('config');
-        
         return new self(
-            $config->get(ConfigProvider::CONFIG_KEY_MODE, self::MODE_FIND_ALL),
-            $config->get(ConfigProvider::CONFIG_KEY_FILTERS, [])
+            $config[ConfigProvider::CONFIG_KEY_MODE] ?? self::MODE_FIND_ALL,
+            $config[ConfigProvider::CONFIG_KEY_FILTERS] ?? []
         );
     }
 }
