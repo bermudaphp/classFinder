@@ -15,8 +15,6 @@ class ConfigProvider
         return [
             'dependencies' => [
                 'factories' => $this->getFactories(),
-                'aliases' => $this->getAliases(),
-                'invokables' => $this->getInvokables()
             ]
         ];
     }
