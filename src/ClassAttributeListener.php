@@ -2,9 +2,8 @@
 
 namespace Bermuda\ClassScanner;
 
-/**
- * @template T
- */
+use Bermuda\Reflection\ReflectionClass;
+
 final class ClassAttributeListener implements ClassFoundListenerInterface
 {
     /**
@@ -18,8 +17,8 @@ final class ClassAttributeListener implements ClassFoundListenerInterface
     private array $attrs = [];
 
     /**
+     * @template T
      * @param class-string<T> $attributeName
-     * @param callable $finalizer
      */
     public function __construct(
         private readonly string $attributeName,
@@ -33,9 +32,8 @@ final class ClassAttributeListener implements ClassFoundListenerInterface
         ($this->finalizer)($this->attrs);
     }
 
-    public function handle(\ReflectionClass $reflector): void
+    public function handle(ReflectionClass $reflector): void
     {
-        $attribute = $reflector->getAttributes($this->attributeName)[0] ?? null;
-        if ($attribute) $this->attrs[] = $attribute;
+        if ($reflector->hasAttribute($this->attributeName))) $reflector->getAttribute($this->attributeName);
     }
 }
