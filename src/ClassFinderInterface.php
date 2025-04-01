@@ -12,5 +12,5 @@ interface ClassFinderInterface
      * @return \Generator<ReflectionClass>
      * @throws \ReflectionException
      */
-    public function find(string|array $dirs, string|array $exclude = []): \Generator
+    public function find(string|array $dirs, string|array $exclude = []): iterable
 }
