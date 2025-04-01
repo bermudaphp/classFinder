@@ -58,7 +58,7 @@ final class ClassFinder implements ClassFinderInterface
     /**
      * @param string|string[] $dirs
      * @param string|string[] $exclude
-     * @return \Generator<\ReflectionClass>
+     * @return \Generator<ReflectionClass>
      * @throws \ReflectionException
      */
     public function find(string|array $dirs, string|array $exclude = []): \Generator
