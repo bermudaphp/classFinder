@@ -2,11 +2,15 @@
 
 namespace Bermuda\ClassScanner;
 
+use Bermuda\Reflection\ReflectionClass;
+
 interface ClassFinderInterface
 {
     /**
-     * @return iterable<\ReflectionClass>
+     * @param string|string[] $dirs
+     * @param string|string[] $exclude
+     * @return \Generator<ReflectionClass>
      * @throws \ReflectionException
      */
-    public function find(string $dir): iterable;
+    public function find(string|array $dirs, string|array $exclude = []): \Generator
 }
