@@ -1,10 +1,10 @@
 {
-  "name": "bermudaphp/class-scanner",
+  "name": "bermudaphp/finder",
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "Bermuda\\ClassScanner\\": "src/",
-      "Bermuda\\ClassScanner\\Filter\\": "src/filter/"
+      "Bermuda\\ClassFinder\\": "src/",
+      "Bermuda\\ClassFinder\\Filter\\": "src/filter/"
     }
   },
   "require": {
