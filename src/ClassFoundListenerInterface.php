@@ -7,6 +7,5 @@ use Bermuda\Reflection\ReflectionFunction;
 
 interface ClassFoundListenerInterface
 {
-    public function finalize(): void ;
     public function handle(ReflectionClass|ReflectionFunction $reflector): void ;
 }
