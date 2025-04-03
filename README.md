@@ -1,6 +1,6 @@
 # Install
 ```bash
-composer require bermudaphp/class-scanner
+composer require bermudaphp/finder
 ```
 # Usage
 ```php
