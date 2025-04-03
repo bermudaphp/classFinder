@@ -26,7 +26,9 @@ final class ClassFoundListenerProvider implements ClassFoundListenerProviderInte
 
     public function finalize(): void
     {
-        foreach ($this->listeners as $listener) $listener->finalize();
+        foreach ($this->listeners as $listener) {
+            if ($listener instanceof FinalizedListenerInterface) $listener->finalize();
+        }
     }
 
     public function handle(ReflectionClass|ReflectionFunction $reflector): void
