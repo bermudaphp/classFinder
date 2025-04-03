@@ -2,9 +2,11 @@
 
 namespace Bermuda\ClassFinder;
 
+use Bermuda\Reflection\ReflectionClass;
+use Bermuda\Reflection\ReflectionFunction;
 use Psr\Container\ContainerInterface;
 
-final class ClassFoundListenerProvider implements ClassFoundListenerProviderInterface
+final class ClassFoundListenerProvider implements ClassFoundListenerProviderInterface, ClassFoundListenerInterface
 {
     private array $listeners = [];
 
@@ -22,6 +24,16 @@ final class ClassFoundListenerProvider implements ClassFoundListenerProviderInte
         $this->listeners[] = $listener;
     }
 
+    public function finalize(): void
+    {
+        foreach ($this->listeners as $listener) $listener->finalize();
+    }
+
+    public function handle(ReflectionClass|ReflectionFunction $reflector): void
+    {
+        foreach ($this->listeners as $listener) $listener->handle($reflector);
+    }
+
     /**
      * @return ClassFoundListenerInterface[]
      */
@@ -32,6 +44,12 @@ final class ClassFoundListenerProvider implements ClassFoundListenerProviderInte
 
     public static function createFromContainer(ContainerInterface $container): self
     {
-        return new self($container->get('config')[ConfigProvider::CONFIG_KEY_LISTENERS] ?? []);
+        $listeners = $container->get('config')[ConfigProvider::CONFIG_KEY_LISTENERS] ?? [];
+        return new self(empty($listeners) ? [] : array_map(
+            static function (ClassFoundListenerInterface|string $listener) use ($container): ClassFoundListenerInterface {
+                if ($listener instanceof ClassFoundListenerInterface) return $listener;
+                return $container->get($listener);
+            }, $listeners
+        ));
     }
 }
