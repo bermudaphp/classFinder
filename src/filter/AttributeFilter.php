@@ -3,13 +3,14 @@
 namespace Bermuda\ClassScanner\Filter;
 
 use Bermuda\Reflection\ReflectionClass;
+use Bermuda\Reflection\ReflectionFunction;
 
-class AttributeFilter extends \Bermuda\ClassScanner\Filter\AbstractFilter
+class AttributeFilter extends AbstractFilter
 {
     /**
      * @template T
      * @param class-string<T> $attribute
-     * @param iterable<ReflectionClass> $classes
+     * @param iterable<ReflectionClass|ReflectionFunction> $classes
      */
     public function __construct(
         public readonly string $attribute,
@@ -18,7 +19,7 @@ class AttributeFilter extends \Bermuda\ClassScanner\Filter\AbstractFilter
         parent::__construct($classes);
     }
 
-    protected function filter(ReflectionClass $class): bool
+    protected function filter(ReflectionClass|ReflectionFunction $class): bool
     {
         return $class->hasAttribute($this->attribute);
     }
