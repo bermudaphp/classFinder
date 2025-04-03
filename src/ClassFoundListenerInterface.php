@@ -3,6 +3,7 @@
 namespace Bermuda\ClassScanner;
 
 use Bermuda\Reflection\ReflectionClass;
+use Bermuda\Reflection\ReflectionFunction;
 
 interface ClassFoundListenerInterface
 {
