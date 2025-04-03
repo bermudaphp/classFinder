@@ -19,7 +19,7 @@ final class ClassFinder implements ClassFinderInterface
     private array $filters = [];
 
     public function __construct(
-        public int $mode = self::MODE_FIND_CLASSES,
+        public readonly int $mode = self::MODE_FIND_CLASSES,
         iterable $filters = []
     ) {
         foreach ($filters as $filter) $this->addFilter($filter);
@@ -29,6 +29,17 @@ final class ClassFinder implements ClassFinderInterface
     {
         $copy = new self($this->mode);
         $copy->addFilter($filter);
+
+        return $copy;
+    }
+
+    /**
+     * @return ClassFinder
+     */
+    public function withMode(int $mode): ClassFinderInterface
+    {
+        $copy = new self($mode);
+        $copy->filters = $this->filters;
 
         return $copy;
     }
