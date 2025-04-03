@@ -21,6 +21,6 @@ class AttributeFilter extends AbstractFilter
 
     protected function filter(ReflectionClass|ReflectionFunction $class): bool
     {
-        return $class->hasAttribute($this->attribute);
+        return $class->hasAttribute($this->attribute, true);
     }
 }
