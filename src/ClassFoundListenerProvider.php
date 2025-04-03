@@ -6,7 +6,7 @@ use Bermuda\Reflection\ReflectionClass;
 use Bermuda\Reflection\ReflectionFunction;
 use Psr\Container\ContainerInterface;
 
-final class ClassFoundListenerProvider implements ClassFoundListenerProviderInterface, ClassFoundListenerInterface
+final class ClassFoundListenerProvider implements ClassFoundListenerProviderInterface, FinalizedListenerInterface
 {
     private array $listeners = [];
 
