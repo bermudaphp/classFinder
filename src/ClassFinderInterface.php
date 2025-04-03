@@ -17,8 +17,9 @@ interface ClassFinderInterface
 
     public int $mode {
         get;
-        set;
     }
+
+    public function withMode(int $mode): ClassFinderInterface ;
 
     /**
      * @param string|string[] $dirs
