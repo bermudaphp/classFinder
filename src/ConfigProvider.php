@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface;
 
 class ConfigProvider
 {
-    public const CONFIG_KEY_MODE = '\Bermuda\ClassFinder:flags';
+    public const CONFIG_KEY_MODE = '\Bermuda\ClassFinder:mode';
     public const CONFIG_KEY_FILTERS = '\Bermuda\ClassFinder:filters';
     public const CONFIG_KEY_LISTENERS = '\Bermuda\ClassFinder:listeners';
 
@@ -23,6 +23,7 @@ class ConfigProvider
     {
         return [
             ClassFinderInterface::class => [ClassFinder::class, 'createFromContainer'],
+            ClassFoundListenerProviderInterface::class => [ClassFoundListenerProvider::class, 'createFromContainer']
         ];
     }
 }
