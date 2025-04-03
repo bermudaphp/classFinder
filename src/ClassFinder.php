@@ -1,6 +1,6 @@
 <?php
 
-namespace Bermuda\ClassScanner;
+namespace Bermuda\ClassFinder;
 
 use PhpParser\Node;
 use PhpParser\NodeFinder;
@@ -9,18 +9,10 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\Finder\Finder;
 use Bermuda\Reflection\ReflectionClass;
 use Bermuda\Reflection\ReflectionFunction;
-use Bermuda\ClassScanner\Filter\FilterInterface;
+use Bermuda\ClassFinder\Filter\FilterInterface;
 
 final class ClassFinder implements ClassFinderInterface
 {
-    const int MODE_FIND_INTERFACES = 1;
-    const int MODE_FIND_CLASSES = 2;
-    const int MODE_FIND_ENUMS = 3;
-    const int MODE_FIND_TRAITS = 4;
-    const int MODE_FIND_FUNCTIONS = 5;
-    const int MODE_FIND_ALL = self::MODE_FIND_CLASSES | self::MODE_FIND_ENUMS
-    | self::MODE_FIND_TRAITS | self::MODE_FIND_INTERFACES | self::MODE_FIND_FUNCTIONS;
-
     /**
      * @var FilterInterface[]
      */

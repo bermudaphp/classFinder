@@ -1,14 +1,14 @@
 <?php
 
-namespace Bermuda\ClassScanner;
+namespace Bermuda\ClassFinder;
 
 use Psr\Container\ContainerInterface;
 
 class ConfigProvider
 {
-    public const CONFIG_KEY_MODE = '\Bermuda\ClassScanner:flags';
-    public const CONFIG_KEY_FILTERS = '\Bermuda\ClassScanner:filters';
-    public const CONFIG_KEY_LISTENERS = '\Bermuda\ClassScanner:listeners';
+    public const CONFIG_KEY_MODE = '\Bermuda\ClassFinder:flags';
+    public const CONFIG_KEY_FILTERS = '\Bermuda\ClassFinder:filters';
+    public const CONFIG_KEY_LISTENERS = '\Bermuda\ClassFinder:listeners';
 
     public function __invoke(): array
     {
@@ -22,7 +22,6 @@ class ConfigProvider
     protected function getFactories(): array
     {
         return [
-            Scanner::class => [ScannerFactory::class, 'createFromContainer'],
             ClassFinderInterface::class => [ClassFinder::class, 'createFromContainer'],
         ];
     }

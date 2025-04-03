@@ -1,6 +1,6 @@
 <?php
 
-namespace Bermuda\ClassScanner;
+namespace Bermuda\ClassFinder;
 
 use Bermuda\Reflection\ReflectionClass;
 use Bermuda\Reflection\ReflectionFunction;
