@@ -9,9 +9,10 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\Finder\Finder;
 use Bermuda\Reflection\ReflectionClass;
 use Bermuda\Reflection\ReflectionFunction;
+use Bermuda\ClassFinder\Filter\Filtrable;
 use Bermuda\ClassFinder\Filter\FilterInterface;
 
-final class ClassFinder implements ClassFinderInterface
+final class ClassFinder implements ClassFinderInterface, Filtrable
 {
     /**
      * @var FilterInterface[]
@@ -24,15 +25,7 @@ final class ClassFinder implements ClassFinderInterface
     ) {
         foreach ($filters as $filter) $this->addFilter($filter);
     }
-
-    public function withFilter(FilterInterface $filter): self
-    {
-        $copy = new self($this->mode);
-        $copy->addFilter($filter);
-
-        return $copy;
-    }
-
+    
     /**
      * @return ClassFinder
      */
@@ -43,12 +36,23 @@ final class ClassFinder implements ClassFinderInterface
 
         return $copy;
     }
+
+    /**
+     * @return self
+     */
+    public function withFilter(FilterInterface $filter): Filtrable&ClassFinderInterface
+    {
+        $copy = new self($this->mode);
+        $copy->addFilter($filter);
+
+        return $copy;
+    }
     
     /**
      * @param iterable<FilterInterface> $filters
      * @return self
      */
-    public function withFilters(iterable $filters): self
+    public function withFilters(iterable $filters): Filtrable&ClassFinderInterface
     {
         $copy = new self($this->mode);
         foreach ($filters as $filter) $copy->addFilter($filter);
