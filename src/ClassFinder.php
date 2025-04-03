@@ -8,6 +8,7 @@ use PhpParser\ParserFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Finder\Finder;
 use Bermuda\Reflection\ReflectionClass;
+use Bermuda\Reflection\ReflectionFunction;
 use Bermuda\ClassScanner\Filter\FilterInterface;
 
 final class ClassFinder implements ClassFinderInterface
@@ -16,7 +17,9 @@ final class ClassFinder implements ClassFinderInterface
     const int MODE_FIND_CLASSES = 2;
     const int MODE_FIND_ENUMS = 3;
     const int MODE_FIND_TRAITS = 4;
-    const int MODE_FIND_ALL = self::MODE_FIND_CLASSES | self::MODE_FIND_ENUMS | self::MODE_FIND_TRAITS | self::MODE_FIND_INTERFACES;
+    const int MODE_FIND_FUNCTIONS = 5;
+    const int MODE_FIND_ALL = self::MODE_FIND_CLASSES | self::MODE_FIND_ENUMS
+    | self::MODE_FIND_TRAITS | self::MODE_FIND_INTERFACES | self::MODE_FIND_FUNCTIONS;
 
     /**
      * @var FilterInterface[]
@@ -58,7 +61,7 @@ final class ClassFinder implements ClassFinderInterface
     /**
      * @param string|string[] $dirs
      * @param string|string[] $exclude
-     * @return \Generator<ReflectionClass>
+     * @return \Generator<ReflectionClass|\ReflectionFunction>
      * @throws \ReflectionException
      */
     public function find(string|array $dirs, string|array $exclude = []): \Generator
@@ -108,15 +111,20 @@ final class ClassFinder implements ClassFinderInterface
                 };
                 if ($node->name) {
                     if ($node->name instanceof Node\Name\FullyQualified) {
-                        $cls = $node->name->toString();
+                        $name = $node->name->toString();
                     } else {
-                        $cls = $namespace ? sprintf('%s\%s', $namespace->name->toString(),
+                        $name = $namespace ? sprintf('%s\%s', $namespace->name->toString(),
                             $node->name->toString()
                         )
                             : $node->name->toString();
                     }
 
-                    yield new ReflectionClass($cls);
+                    try {
+                        yield new ReflectionClass($name);
+                    } catch (\Throwable $e) {
+                        yield new ReflectionFunction($name);
+                    }
+
                 }
             }
         }
@@ -144,6 +152,10 @@ final class ClassFinder implements ClassFinderInterface
             $nodes[] = Node\Stmt\Trait_::class;
         }
 
+        if ($this->mode&self::MODE_FIND_FUNCTIONS) {
+            $nodes[] = Node\Stmt\Function_::class;
+        }
+
         return static function(Node $node) use ($nodes): bool {
             foreach ($nodes as $n) if ($node instanceof $n) return true;
             return false;
@@ -153,6 +165,7 @@ final class ClassFinder implements ClassFinderInterface
     public static function createFromContainer(ContainerInterface $container): ClassFinder
     {
         $config = $container->get('config');
+        
         return new self(
             $config[ConfigProvider::CONFIG_KEY_MODE] ?? self::MODE_FIND_ALL,
             $config[ConfigProvider::CONFIG_KEY_FILTERS] ?? []
