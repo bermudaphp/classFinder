@@ -5,9 +5,10 @@ namespace Bermuda\ClassFinder;
 use PhpParser\Node;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
-use Psr\Container\ContainerInterface;
-use Symfony\Component\Finder\Finder;
+use Bermuda\Filter\Filterable;
 use Bermuda\Filter\FilterInterface;
+use Symfony\Component\Finder\Finder;
+use Psr\Container\ContainerInterface;
 use Bermuda\Filter\FilterableInterface;
 use Bermuda\Reflection\ReflectionClass;
 use Bermuda\Reflection\ReflectionFunction;
@@ -15,16 +16,16 @@ use Bermuda\Reflection\ReflectionFunction;
 /**
  * ClassFinder
  *
- * Discovers classes, interfaces, functions, enums, and traits within provided directories.
- * Filters can be applied to the discovered reflection objects. This class uses the PHP Parser
- * to analyze file contents and Symfony Finder to locate PHP files.
+ * Discovers PHP elements—such as classes, interfaces, functions, enums, and traits—in the provided directories.
+ * Filters can be applied to the discovered reflection objects. This class uses the PHP Parser to analyze file contents
+ * and Symfony Finder to locate PHP files.
+ *
+ * @method withFilter(FilterInterface $filter, bool $prepend = false): ClassFinder
+ * @method withoutFilter(FilterInterface $filter): ClassFinder
  */
 final class ClassFinder implements ClassFinderInterface, FilterableInterface
 {
-    /**
-     * @var FilterInterface[] Array of filters to apply on discovered reflection objects.
-     */
-    private array $filters = [];
+    use Filterable { accept as private; }
 
     /**
      * Maps each search mode flag to its corresponding AST node class.
@@ -40,92 +41,61 @@ final class ClassFinder implements ClassFinderInterface, FilterableInterface
     /**
      * Constructor.
      *
-     * @param int-mask-of<self::MODE_*> $mode The mode that determines which PHP elements to search for
-     *                  (e.g. MODE_FIND_CLASSES, MODE_FIND_INTERFACES, etc.).
-     * @param iterable<FilterInterface>|FilterInterface $filters
+     * @param iterable<FilterInterface>|FilterInterface $filters Either a single FilterInterface instance or an iterable of them.
+     *
+     * Validates the provided filters so that each one implements FilterInterface. If a single filter is passed,
+     * it is wrapped into an array for uniform processing.
+     *
+     * @throws \InvalidArgumentException if any provided filter does not implement FilterInterface.
      */
     public function __construct(
-        public readonly int $mode = self::MODE_FIND_CLASSES,
-        iterable $filters = []
+        iterable|FilterInterface $filters = []
     ) {
         if ($filters instanceof FilterInterface) {
             $this->filters = [$filters];
-        } else foreach ($filters as $filter) $this->addFilter($filter);
-    }
-
-    /**
-     * Returns a new instance with the specified mode.
-     *
-     * @param int-mask-of<self::MODE_*> $mode The new mode for finding elements.
-     * @return ClassFinderInterface New instance of ClassFinder with the updated mode.
-     */
-    public function withMode(int $mode): ClassFinderInterface
-    {
-        $copy = new self($mode);
-        $copy->filters = $this->filters;
-
-        return $copy;
-    }
-
-    /**
-     * Returns a new instance with an additional filter.
-     *
-     * @param FilterInterface $filter The filter to add.
-     * @param bool $prepend Whether to prepend the filter (default is false, meaning the filter will be appended).
-     * @return self A new ClassFinder instance with the added filter.
-     */
-    public function withFilter(FilterInterface $filter, bool $prepend = false): ClassFinder
-    {
-        $copy = new self($this->mode);
-        $copy->addFilter($filter, $prepend);
-
-        return $copy;
-    }
-
-    /**
-     * Returns a new instance without the specified filter.
-     *
-     * @param FilterInterface $filter The filter to remove.
-     * @return ClassFinder A new ClassFinder instance without the specified filter.
-     */
-    public function withoutFilter(FilterInterface $filter): ClassFinder
-    {
-        $copy = new self($this->mode);
-        $copy->filters = array_filter($this->filters, static fn ($f) => $f !== $filter);
-
-        return $copy;
-
-    }
-
-    /**
-     * Finds PHP elements in the given directories and applies filters to them.
-     *
-     * @param string|string[] $dirs One or more directories to search.
-     * @param string|string[] $exclude One or more directories or file patterns to exclude.
-     * @return \Generator<\ReflectionClass|\ReflectionFunction> Yields reflection objects (ReflectionClass or ReflectionFunction).
-     * @throws \ReflectionException If reflection fails.
-     */
-    public function find(string|array $dirs, string|array $exclude = []): \Generator
-    {
-        foreach ($this->createGenerator($dirs, $exclude) as $i => $reflector) {
-            if (array_any($this->filters, static fn(FilterInterface $filter) => $filter->accept($i, $reflector))) {
-                yield $i => $reflector;
+        } else {
+            foreach ($filters as $i => $filter) {
+                if (!$filter instanceof FilterInterface) {
+                    throw new \InvalidArgumentException(
+                        "\$filters[$i] passed to Bermuda\ClassFinder\ClassFinder must implement FilterInterface"
+                    );
+                }
+                $this->filters[] = $filter;
             }
         }
     }
 
     /**
+     * Finds PHP elements in the given directories and applies filters to them.
+     *
+     * This method creates a new ReflectorIterator, passing along a generator produced by createGenerator().
+     * The generator scans all PHP files (using Symfony Finder and PhpParser), and yields reflection objects – either
+     * ReflectionClass or ReflectionFunction – based on parsed AST nodes.
+     *
+     * @param string|string[] $dirs One or more directories to search.
+     * @param string|string[] $exclude One or more directories or file patterns to exclude from the search.
+     * @param int-mask-of<self::MODE_*> $modeFlag Bitmask (using self::MODE_* constants) specifying which node types to include (default is MODE_FIND_ALL).
+     * @return ReflectorIterator An iterator over the discovered and filtered reflection objects.
+     */
+    public function find(string|array $dirs, string|array $exclude = [], int $mode = self::MODE_FIND_ALL): ReflectorIterator
+    {
+        return new ReflectorIterator($this->createGenerator($dirs, $exclude, $mode), $this->filters);
+    }
+
+    /**
      * Creates a generator that yields reflection objects by scanning PHP files.
      *
-     * This method uses Symfony Finder to locate PHP files in the provided directories,
-     * then uses PhpParser to parse their contents, and finally uses an AST filter to select
-     * nodes corresponding to PHP elements.
+     * This method uses Symfony Finder to locate PHP files within the specified directories,
+     * then uses PhpParser to parse each file into an Abstract Syntax Tree (AST). An AST filter (built via createAstFilter())
+     * is applied to select only the nodes corresponding to the desired PHP elements. For each matching node,
+     * it determines the fully-qualified name (taking namespaces into account) and yields a ReflectionClass or ReflectionFunction.
      *
      * @param string|string[] $dirs Directories to search.
-     * @param string|string[] $exclude Patterns to exclude from search.
+     * @param string|string[] $exclude Patterns to exclude from the search.
+     * @param int-mask-of<self::MODE_*> $modeFlag Bitmask (using self::MODE_* constants) determining which node types are of interest.
      * @return \Generator Yields reflection objects.
      */
-    private function createGenerator(string|array $dirs, string|array $exclude): \Generator
+    private function createGenerator(string|array $dirs, string|array $exclude, int $modeFlag = self::MODE_FIND_ALL): \Generator
     {
         $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $finder = new NodeFinder;
@@ -136,7 +106,7 @@ final class ClassFinder implements ClassFinderInterface, FilterableInterface
             ->name('/\.php$/');
 
 
-        $filter = $this->createAstFilter();
+        $filter = $this->createAstFilter($modeFlag);
 
         foreach ($files as $file) {
 
@@ -187,18 +157,19 @@ final class ClassFinder implements ClassFinderInterface, FilterableInterface
     }
 
     /**
-     * Creates an AST filter callable based on the current mode.
+     * Creates an AST filter callable based on the given mode flag.
      *
-     * The callable checks if a given AST node is an instance of one of the desired node types,
-     * such as classes, interfaces, enums, traits, or functions.
+     * The returned callable checks if an AST node is an instance of one of the desired node types (such as classes,
+     * interfaces, enums, traits, or functions), determined by comparing against the internal nodeMap.
      *
-     * @return callable A callable which accepts a Node and returns true if it matches.
+     * @param int-mask-of<self::MODE_*> $modeFlag Bitmask (using self::MODE_* constants) specifying which node types should be accepted.
+     * @return callable A callable that accepts an AST Node and returns true if it matches one of the desired types.
      */
-    private function createAstFilter(): callable
+    private function createAstFilter(int $modeFlag): callable
     {
         $nodes = [Node\Stmt\Namespace_::class];
 
-        foreach ($this->nodeMap as $mode => $node) if ($this->mode&$mode) $nodes[] = $node;
+        foreach ($this->nodeMap as $mode => $node) if ($modeFlag&$mode) $nodes[] = $node;
 
         return static fn(Node $node): bool => array_any($nodes,
             static fn(string $nodeClass) => $node::class === $nodeClass
@@ -222,17 +193,5 @@ final class ClassFinder implements ClassFinderInterface, FilterableInterface
             $config[ConfigProvider::CONFIG_KEY_MODE] ?? self::MODE_FIND_ALL,
             $config[ConfigProvider::CONFIG_KEY_FILTERS] ?? []
         );
-    }
-
-    /**
-     * Adds a filter to the internal filters array.
-     *
-     * @param FilterInterface $filter The filter object to add.
-     * @param bool $prepend If TRUE, the filter will be added to the beginning of the array.
-     */
-    private function addFilter(FilterInterface $filter, bool $prepend = false): void
-    {
-        $prepend ? array_unshift($this->filters, $filter)
-            : $this->filters[] = $filter;
     }
 }

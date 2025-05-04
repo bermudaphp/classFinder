@@ -46,33 +46,14 @@ interface ClassFinderInterface
     const MODE_FIND_ALL = self::MODE_FIND_CLASSES | self::MODE_FIND_ENUMS
     | self::MODE_FIND_TRAITS | self::MODE_FIND_INTERFACES | self::MODE_FIND_FUNCTIONS;
 
-    /**
-     * The current mode for finding elements.
-     *
-     * This is a read-only property representing the bitmask of MODE_FIND_* constants
-     * that defines which types of PHP elements should be discovered.
-     *
-     * @return int
-     */
-    public int $mode {
-        get;
-    }
-
-    /**
-     * Returns a new instance with the specified mode.
-     *
-     * @param int $mode A bitmask of MODE_FIND_* constants indicating which types of elements to search for.
-     * @return ClassFinderInterface A new instance of ClassFinderInterface with the updated mode.
-     */
-    public function withMode(int $mode): ClassFinderInterface;
 
     /**
      * Searches for PHP elements in the specified directories.
      *
      * @param string|string[] $dirs One or more directories to search for PHP files.
      * @param string|string[] $exclude One or more directories or filename patterns to exclude from the search.
-     * @return \Generator Yields ReflectionClass or ReflectionFunction instances representing the discovered elements.
-     * @throws \ReflectionException If reflection on any discovered element fails.
+     * @param int-mask-of<self::MODE_*> $modeFlag Bitmask (using self::MODE_* constants) specifying which node types to include (default is MODE_FIND_ALL).
+     * @return ReflectorIterator
      */
-    public function find(string|array $dirs, string|array $exclude = []): iterable;
+    public function find(string|array $dirs, string|array $exclude = [], int $modeFlag = self::MODE_FIND_ALL): ReflectorIterator ;
 }
