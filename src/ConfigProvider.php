@@ -6,9 +6,9 @@ use Psr\Container\ContainerInterface;
 
 class ConfigProvider
 {
-    public const CONFIG_KEY_MODE = '\Bermuda\ClassFinder:mode';
-    public const CONFIG_KEY_FILTERS = '\Bermuda\ClassFinder:filters';
-    public const CONFIG_KEY_LISTENERS = '\Bermuda\ClassFinder:listeners';
+    public const CONFIG_KEY_MODE = 'Bermuda\ClassFinder:mode';
+    public const CONFIG_KEY_FILTERS = 'Bermuda\ClassFinder:filters';
+    public const CONFIG_KEY_LISTENERS = 'Bermuda\ClassFinder:listeners';
 
     public function __invoke(): array
     {
