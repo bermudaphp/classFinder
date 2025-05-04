@@ -5,6 +5,7 @@ namespace Bermuda\ClassFinder;
 use Bermuda\Filter\Filterable;
 use Bermuda\Filter\FilterInterface;
 use Bermuda\Filter\FilterableInterface;
+use Bermuda\Iterator\IterableArrayIterator;
 use Bermuda\Stdlib\Arrayable;
 
 /**
@@ -22,6 +23,8 @@ final class ReflectorIterator implements \IteratorAggregate, \Countable, Arrayab
 {
     use Filterable { accept as private; }
 
+    private iterable $reflectors;
+
     /**
      * Constructor.
      *
@@ -31,7 +34,7 @@ final class ReflectorIterator implements \IteratorAggregate, \Countable, Arrayab
      * @throws \InvalidArgumentException If any provided filter does not implement FilterInterface.
      */
     public function __construct(
-        private iterable $reflectors,
+        iterable $reflectors,
         FilterInterface|iterable $filters = []
     ) {
         if ($filters instanceof FilterInterface) {
@@ -46,7 +49,10 @@ final class ReflectorIterator implements \IteratorAggregate, \Countable, Arrayab
                 $this->filters[] = $filter;
             }
         }
+
+        $this->reflectors = new IterableArrayIterator($reflectors);
     }
+
 
     /**
      * Returns an iterator (as a generator) that yields only the accepted reflectors.
@@ -59,17 +65,6 @@ final class ReflectorIterator implements \IteratorAggregate, \Countable, Arrayab
      */
     public function getIterator(): \Generator
     {
-        if (!is_array($this->reflectors)) {
-            $reflectorArray = [];
-            foreach ($this->reflectors as $i => $reflector) {
-                $reflectorArray[$i] = $reflector;
-                if ($this->accept($i, $reflector)) yield $i => $reflector;
-            }
-
-            $this->reflectors = $reflectorArray;
-            return;
-        }
-
         foreach ($this->reflectors as $i => $reflector) {
             if ($this->accept($i, $reflector)) yield $i => $reflector;
         }
