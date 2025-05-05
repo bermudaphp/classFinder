@@ -5,7 +5,7 @@ namespace Bermuda\ClassFinder;
 use Bermuda\Filter\Filterable;
 use Bermuda\Filter\FilterInterface;
 use Bermuda\Filter\FilterableInterface;
-use Bermuda\Iterator\IterableArrayIterator;
+use Bermuda\Stdlib\IterableArrayIterator;
 use Bermuda\Stdlib\Arrayable;
 
 /**
@@ -23,7 +23,30 @@ final class ReflectorIterator implements \IteratorAggregate, \Countable, Arrayab
 {
     use Filterable { accept as private; }
 
-    private iterable $reflectors;
+    /**
+     * Cached total count of the reflectors.
+     *
+     * The getter is supposed to return the count from the underlying iterator (if available)
+     * or the already stored $count. Note that property accessor syntax shown here is illustrative;
+     * standard PHP does not support this syntax, so this may require an alternative implementation.
+     *
+     * @var int|null
+     */
+    private(set) ?int $count = null {
+        get {
+            return $this->reflectors?->count ?? $this->count;
+        }
+    }
+
+    /**
+     * Flag indicating whether the entire reflector collection has been fully traversed and cached.
+     *
+     * @var bool
+     */
+    private(set) bool $traversed = false;
+
+
+    private IterableArrayIterator|array $reflectors;
 
     /**
      * Constructor.
@@ -53,7 +76,6 @@ final class ReflectorIterator implements \IteratorAggregate, \Countable, Arrayab
         $this->reflectors = new IterableArrayIterator($reflectors);
     }
 
-
     /**
      * Returns an iterator (as a generator) that yields only the accepted reflectors.
      *
@@ -66,8 +88,10 @@ final class ReflectorIterator implements \IteratorAggregate, \Countable, Arrayab
     public function getIterator(): \Generator
     {
         foreach ($this->reflectors as $i => $reflector) {
-            if ($this->accept($i, $reflector)) yield $i => $reflector;
+            if ($this->accept($reflector, $i)) yield $i => $reflector;
         }
+
+        $this->traverse();
     }
 
     /**
@@ -80,10 +104,7 @@ final class ReflectorIterator implements \IteratorAggregate, \Countable, Arrayab
      */
     public function toArray(): array
     {
-        if (!is_array($this->reflectors)) {
-            $this->reflectors = iterator_to_array($this);
-        }
-
+        $this->traverse();
         return $this->reflectors;
     }
 
@@ -96,10 +117,15 @@ final class ReflectorIterator implements \IteratorAggregate, \Countable, Arrayab
      */
     public function count(): int
     {
-        if (!is_array($this->reflectors)) {
-            $this->toArray();
-        }
+        $this->traverse();
+        return $this->count;
+    }
 
-        return count($this->reflectors);
+    private function traverse(): void
+    {
+        if (!$this->traversed) {
+            $this->traversed = true;
+            $this->reflectors = $this->reflectors->toArray();
+        }
     }
 }
