@@ -3,8 +3,7 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "Bermuda\\ClassFinder\\": "src/",
-      "Bermuda\\ClassFinder\\Filter\\": "src/filter/"
+      "Bermuda\\ClassFinder\\": "src/"
     }
   },
   "require": {
