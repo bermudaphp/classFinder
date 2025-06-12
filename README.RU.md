@@ -26,7 +26,6 @@ composer require bermudaphp/finder
 ## Требования
 
 - PHP 8.4 или выше
-- Composer
 
 ## Быстрый старт
 
