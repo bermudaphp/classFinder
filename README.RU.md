@@ -514,23 +514,3 @@ $componentFilter = new OneOfFilter([
 $finder = new ClassFinder([$componentFilter]);
 $components = $finder->find('src/');
 ```
-
-## Вклад в проект
-
-1. Сделайте форк репозитория
-2. Создайте ветку для вашей функции (`git checkout -b feature/amazing-feature`)
-3. Зафиксируйте ваши изменения (`git commit -m 'Add some amazing feature'`)
-4. Отправьте в ветку (`git push origin feature/amazing-feature`)
-5. Откройте Pull Request
-
-## Лицензия
-
-Этот проект лицензирован под лицензией MIT - смотрите файл [LICENSE](LICENSE) для подробностей.
-
-## Авторы
-
-Разработано командой Bermuda PHP.
-
----
-
-**[English version / Английская версия](README.md)**
