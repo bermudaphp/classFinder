@@ -170,28 +170,66 @@ $filter = PatternFilter::namespace('App\\Services');
 
 ### Attribute Filters
 
+#### Deep Search Feature
+
+The `deepSearch` parameter in attribute filters controls the scope of attribute searching:
+
+- **`deepSearch: false` (default)**: Searches only for attributes on the class itself
+- **`deepSearch: true`**: Extends search to include attributes on class members:
+  - Method attributes
+  - Property attributes  
+  - Constant attributes
+
+```php
+// Example class with attributes at different levels
+class UserController 
+{
+    #[Inject]
+    private UserService $userService;
+    
+    #[Route('/users')]
+    #[Auth('admin')]
+    public function index(): Response 
+    {
+        // method implementation
+    }
+    
+    #[Deprecated]
+    public const STATUS_ACTIVE = 1;
+}
+```
+
 #### AttributeSearchFilter
 Advanced attribute filtering with multiple search options:
 
 ```php
 use Bermuda\ClassFinder\Filter\AttributeSearchFilter;
 
-// Find classes with specific attributes
+// Basic search - only class-level attributes
 $filter = new AttributeSearchFilter(['Route', 'Controller']);
 
-// Mixed exact names and patterns
-$filter = new AttributeSearchFilter(['Route', '*Test*', 'Api*']);
-
-// AND logic - must have ALL attributes
-$filter = new AttributeSearchFilter(['Route', 'Middleware'], matchAll: true);
-
-// Deep search in class members (methods, properties, constants)
+// Deep search - includes method, property, and constant attributes
 $filter = new AttributeSearchFilter(['Inject'], deepSearch: true);
+// Will find UserController because $userService has #[Inject]
 
-// Static helpers
-$filter = AttributeSearchFilter::hasAttribute('Route');
-$filter = AttributeSearchFilter::hasAnyAttribute(['Route', 'Controller']);
-$filter = AttributeSearchFilter::hasAllAttributes(['Route', 'Middleware']);
+// Mixed exact names and patterns with deep search
+$filter = new AttributeSearchFilter(['Route', '*Test*', 'Api*'], deepSearch: true);
+
+// AND logic with deep search - must have ALL attributes (anywhere in class)
+$filter = new AttributeSearchFilter(['Route', 'Auth'], matchAll: true, deepSearch: true);
+// Will find UserController because it has both #[Route] and #[Auth] on methods
+
+// Comparison of search scopes:
+// Without deep search - only finds classes with Route attribute on class declaration
+$classOnlyFilter = new AttributeSearchFilter(['Route'], deepSearch: false);
+
+// With deep search - finds classes with Route on class OR on any method/property/constant
+$deepFilter = new AttributeSearchFilter(['Route'], deepSearch: true);
+
+// Static helpers with deep search
+$filter = AttributeSearchFilter::hasAttribute('Inject', deepSearch: true);
+$filter = AttributeSearchFilter::hasAnyAttribute(['Route', 'Controller'], deepSearch: true);
+$filter = AttributeSearchFilter::hasAllAttributes(['Route', 'Middleware'], deepSearch: true);
 ```
 
 #### AttributePatternFilter
@@ -200,14 +238,28 @@ Pattern matching for attribute names:
 ```php
 use Bermuda\ClassFinder\Filter\AttributePatternFilter;
 
-// Pattern matching
-$filter = new AttributePatternFilter('*Route*', deepSearch: true);
+// Basic pattern matching - only class-level attributes
+$filter = new AttributePatternFilter('*Route*');
 $filter = new AttributePatternFilter('Api*');
 
-// Optimized static helpers
-$filter = AttributePatternFilter::exactAttribute('HttpGet');
-$filter = AttributePatternFilter::anyAttribute(['Route', 'HttpGet', 'Controller']);
-$filter = AttributePatternFilter::attributePrefix('Http');
+// Deep search - includes attributes on methods, properties, constants
+$filter = new AttributePatternFilter('*Route*', deepSearch: true);
+// Will find UserController because index() method has #[Route('/users')]
+
+$filter = new AttributePatternFilter('*Inject*', deepSearch: true);
+// Will find UserController because $userService property has #[Inject]
+
+// Comparison of search scopes:
+// Without deep search - only finds classes with Http* attributes on class
+$classOnlyFilter = new AttributePatternFilter('Http*', deepSearch: false);
+
+// With deep search - finds classes with Http* on class OR members
+$deepFilter = new AttributePatternFilter('Http*', deepSearch: true);
+
+// Optimized static helpers with deep search
+$filter = AttributePatternFilter::exactAttribute('HttpGet', deepSearch: true);
+$filter = AttributePatternFilter::anyAttribute(['Route', 'HttpGet'], deepSearch: true);
+$filter = AttributePatternFilter::attributePrefix('Http', deepSearch: true);
 ```
 
 ## Filter Combination
@@ -460,6 +512,25 @@ $finder = new ClassFinder([
 $services = $finder->find('src/Services/');
 ```
 
+### Find Classes with Deep Attribute Search
+
+```php
+// Find all classes that use dependency injection anywhere in the class
+$finder = new ClassFinder([
+    new AttributeSearchFilter(['Inject', 'Autowired'], deepSearch: true)
+]);
+
+$diClasses = $finder->find('src/');
+
+// Find API-related classes by checking for routing attributes in methods
+$finder = new ClassFinder([
+    new InstantiableFilter(),
+    new AttributePatternFilter('*Route*', deepSearch: true) // Checks class AND method attributes
+]);
+
+$apiClasses = $finder->find('src/');
+```
+
 ### Find Test Classes
 
 ```php
@@ -514,3 +585,7 @@ $componentFilter = new OneOfFilter([
 $finder = new ClassFinder([$componentFilter]);
 $components = $finder->find('src/');
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
