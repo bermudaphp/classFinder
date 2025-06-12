@@ -41,7 +41,7 @@ $finder = new ClassFinder();
 $classes = $finder->find(['src/', 'app/']);
 
 foreach ($classes as $filename => $classInfo) {
-    echo "Found: {$classInfo->fullQualifiedName} in {$filename}\n";
+    echo "Found: $classInfo->fullQualifiedName in $filename\n";
 }
 ```
 
