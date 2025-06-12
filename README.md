@@ -1,6 +1,6 @@
 # Bermuda Class Finder
 
-**[Русская версия](README_ru.md)**
+**[Русская версия](README.RU.md)**
 
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.4-blue.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
