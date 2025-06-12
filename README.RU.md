@@ -170,28 +170,66 @@ $filter = PatternFilter::namespace('App\\Services');
 
 ### Фильтры атрибутов
 
+#### Функция глубокого поиска
+
+Параметр `deepSearch` в фильтрах атрибутов управляет областью поиска атрибутов:
+
+- **`deepSearch: false` (по умолчанию)**: Ищет только атрибуты на самом классе
+- **`deepSearch: true`**: Расширяет поиск, включая атрибуты на членах класса:
+  - Атрибуты методов
+  - Атрибуты свойств
+  - Атрибуты констант
+
+```php
+// Пример класса с атрибутами на разных уровнях
+class UserController 
+{
+    #[Inject]
+    private UserService $userService;
+    
+    #[Route('/users')]
+    #[Auth('admin')]
+    public function index(): Response 
+    {
+        // реализация метода
+    }
+    
+    #[Deprecated]
+    public const STATUS_ACTIVE = 1;
+}
+```
+
 #### AttributeSearchFilter
 Продвинутая фильтрация атрибутов с множественными вариантами поиска:
 
 ```php
 use Bermuda\ClassFinder\Filter\AttributeSearchFilter;
 
-// Поиск классов с определёнными атрибутами
+// Базовый поиск - только атрибуты на уровне класса
 $filter = new AttributeSearchFilter(['Route', 'Controller']);
 
-// Смешанные точные имена и паттерны
-$filter = new AttributeSearchFilter(['Route', '*Test*', 'Api*']);
-
-// Логика И - должны быть ВСЕ атрибуты
-$filter = new AttributeSearchFilter(['Route', 'Middleware'], matchAll: true);
-
-// Глубокий поиск в членах класса (методы, свойства, константы)
+// Глубокий поиск - включает атрибуты методов, свойств и констант
 $filter = new AttributeSearchFilter(['Inject'], deepSearch: true);
+// Найдёт UserController, потому что у $userService есть #[Inject]
 
-// Статические помощники
-$filter = AttributeSearchFilter::hasAttribute('Route');
-$filter = AttributeSearchFilter::hasAnyAttribute(['Route', 'Controller']);
-$filter = AttributeSearchFilter::hasAllAttributes(['Route', 'Middleware']);
+// Смешанные точные имена и паттерны с глубоким поиском
+$filter = new AttributeSearchFilter(['Route', '*Test*', 'Api*'], deepSearch: true);
+
+// Логика И с глубоким поиском - должны быть ВСЕ атрибуты (где угодно в классе)
+$filter = new AttributeSearchFilter(['Route', 'Auth'], matchAll: true, deepSearch: true);
+// Найдёт UserController, потому что у него есть и #[Route], и #[Auth] на методах
+
+// Сравнение областей поиска:
+// Без глубокого поиска - находит только классы с атрибутом Route на объявлении класса
+$classOnlyFilter = new AttributeSearchFilter(['Route'], deepSearch: false);
+
+// С глубоким поиском - находит классы с Route на классе ИЛИ на любом методе/свойстве/константе
+$deepFilter = new AttributeSearchFilter(['Route'], deepSearch: true);
+
+// Статические помощники с глубоким поиском
+$filter = AttributeSearchFilter::hasAttribute('Inject', deepSearch: true);
+$filter = AttributeSearchFilter::hasAnyAttribute(['Route', 'Controller'], deepSearch: true);
+$filter = AttributeSearchFilter::hasAllAttributes(['Route', 'Middleware'], deepSearch: true);
 ```
 
 #### AttributePatternFilter
@@ -200,14 +238,28 @@ $filter = AttributeSearchFilter::hasAllAttributes(['Route', 'Middleware']);
 ```php
 use Bermuda\ClassFinder\Filter\AttributePatternFilter;
 
-// Сопоставление паттернов
-$filter = new AttributePatternFilter('*Route*', deepSearch: true);
+// Базовое сопоставление паттернов - только атрибуты на уровне класса
+$filter = new AttributePatternFilter('*Route*');
 $filter = new AttributePatternFilter('Api*');
 
-// Оптимизированные статические помощники
-$filter = AttributePatternFilter::exactAttribute('HttpGet');
-$filter = AttributePatternFilter::anyAttribute(['Route', 'HttpGet', 'Controller']);
-$filter = AttributePatternFilter::attributePrefix('Http');
+// Глубокий поиск - включает атрибуты на методах, свойствах, константах
+$filter = new AttributePatternFilter('*Route*', deepSearch: true);
+// Найдёт UserController, потому что у метода index() есть #[Route('/users')]
+
+$filter = new AttributePatternFilter('*Inject*', deepSearch: true);
+// Найдёт UserController, потому что у свойства $userService есть #[Inject]
+
+// Сравнение областей поиска:
+// Без глубокого поиска - находит только классы с Http* атрибутами на классе
+$classOnlyFilter = new AttributePatternFilter('Http*', deepSearch: false);
+
+// С глубоким поиском - находит классы с Http* на классе ИЛИ членах
+$deepFilter = new AttributePatternFilter('Http*', deepSearch: true);
+
+// Оптимизированные статические помощники с глубоким поиском
+$filter = AttributePatternFilter::exactAttribute('HttpGet', deepSearch: true);
+$filter = AttributePatternFilter::anyAttribute(['Route', 'HttpGet'], deepSearch: true);
+$filter = AttributePatternFilter::attributePrefix('Http', deepSearch: true);
 ```
 
 ## Комбинирование фильтров
@@ -460,6 +512,25 @@ $finder = new ClassFinder([
 $services = $finder->find('src/Services/');
 ```
 
+### Поиск классов с глубоким поиском атрибутов
+
+```php
+// Найти все классы, которые используют внедрение зависимостей где угодно в классе
+$finder = new ClassFinder([
+    new AttributeSearchFilter(['Inject', 'Autowired'], deepSearch: true)
+]);
+
+$diClasses = $finder->find('src/');
+
+// Найти API-связанные классы, проверив атрибуты маршрутизации в методах
+$finder = new ClassFinder([
+    new InstantiableFilter(),
+    new AttributePatternFilter('*Route*', deepSearch: true) // Проверяет атрибуты класса И методов
+]);
+
+$apiClasses = $finder->find('src/');
+```
+
 ### Поиск тестовых классов
 
 ```php
@@ -514,3 +585,7 @@ $componentFilter = new OneOfFilter([
 $finder = new ClassFinder([$componentFilter]);
 $components = $finder->find('src/');
 ```
+
+## Лицензия
+
+Этот проект лицензирован под лицензией MIT - смотрите файл [LICENSE](LICENSE) для подробностей.
