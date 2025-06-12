@@ -3,14 +3,14 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "Bermuda\\ClassFinder\\": "src/"
+      "Bermuda\\ClassFinder\\": "src/",
+      "Bermuda\\ClassFinder\\Filter\\": "src/filter/"
     }
   },
   "require": {
     "php": "^8.4",
-    "nikic/php-parser": "^5.0.2",
+    "bermudaphp/tokenizer": "^1.0",
     "symfony/finder": "^7.2.2",
-    "bermudaphp/reflection": "^1.0",
     "bermudaphp/filter": "^1.0",
     "psr/container": "^2.0.2"
   }
